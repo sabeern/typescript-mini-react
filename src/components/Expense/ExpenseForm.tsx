@@ -1,9 +1,22 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import ExpenseView from "./ExpenseView";
+import { Dispatch } from "react";
 
+interface ItemType {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+}
 interface ExpenseFormProps {
   optionList: { label: string; option: string }[];
+  itemList: ItemType[];
+  selectedCategory: string;
+  setSelectedCategory: Dispatch<React.SetStateAction<string>>;
+  setAllItemList: Dispatch<React.SetStateAction<ItemType[]>>;
+  allItemList: ItemType[];
 }
 const schema = z.object({
   description: z
@@ -15,16 +28,23 @@ const schema = z.object({
 });
 type dataType = z.infer<typeof schema>;
 
-const ExpenseForm = ({ optionList }: ExpenseFormProps) => {
+const ExpenseForm = ({
+  optionList,
+  itemList,
+  selectedCategory,
+  setSelectedCategory,
+  setAllItemList,
+  allItemList,
+}: ExpenseFormProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<dataType>({
     resolver: zodResolver(schema),
   });
   const submit = (data: dataType) => {
-    console.log(data);
+    setAllItemList([...allItemList, { id: Date.now(), ...data }]);
   };
   return (
     <>
@@ -86,8 +106,12 @@ const ExpenseForm = ({ optionList }: ExpenseFormProps) => {
       <div>
         <div className="flex flex-col gap-1">
           <label>Category</label>
-          <select className="w-96 h-10 rounded-lg border-2 px-2">
-            <option value="All Categories">All Categories</option>
+          <select
+            className="w-96 h-10 rounded-lg border-2 px-2"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="All">All Categories</option>
             {optionList.map((option, i) => (
               <option value={option?.option} key={i}>
                 {option?.label}
@@ -95,6 +119,11 @@ const ExpenseForm = ({ optionList }: ExpenseFormProps) => {
             ))}
           </select>
         </div>
+        <ExpenseView
+          itemList={itemList}
+          setAllItemList={setAllItemList}
+          allItemList={allItemList}
+        />
       </div>
     </>
   );
