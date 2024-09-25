@@ -39,12 +39,14 @@ const ExpenseForm = ({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<dataType>({
     resolver: zodResolver(schema),
   });
   const submit = (data: dataType) => {
     setAllItemList([...allItemList, { id: Date.now(), ...data }]);
+    reset();
   };
   return (
     <>
