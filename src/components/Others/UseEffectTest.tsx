@@ -1,19 +1,13 @@
-import axios, { CanceledError } from "axios";
+import { CanceledError } from "../../services/baseUrl";
 import { useEffect, useState } from "react";
-interface PostType {
-  title: string;
-  id: number;
-}
+import postServices, { PostType } from "../../services/postServices";
 
 const UseEffectTest = () => {
   const [post, setPosts] = useState<PostType[]>([]);
   const [error, setError] = useState("");
   useEffect(() => {
-    const controller = new AbortController();
-    axios
-      .get<PostType[]>("https://jsonplaceholder.typicode.com/posts", {
-        signal: controller.signal,
-      })
+    const { posts, cancel } = postServices.getAllPosts();
+    posts
       .then((res) => {
         setPosts(res.data);
       })
@@ -21,7 +15,7 @@ const UseEffectTest = () => {
         if (err instanceof CanceledError) return;
         setError(err.message);
       });
-    return () => controller.abort();
+    return () => cancel();
   }, []);
   return (
     <div>

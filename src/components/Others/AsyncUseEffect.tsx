@@ -1,5 +1,6 @@
-import axios, { AxiosError, CanceledError } from "axios";
+import { AxiosError, CanceledError } from "../../services/baseUrl";
 import { useEffect, useState } from "react";
+import postServices from "../../services/postServices";
 interface PostType {
   title: string;
   id: number;
@@ -9,14 +10,11 @@ const AsyncUseEffect = () => {
   const [post, setPosts] = useState<PostType[]>([]);
   const [error, setError] = useState("");
   useEffect(() => {
-    const controller = new AbortController();
+    const { posts, cancel } = postServices.getAllPosts();
     const fetchPost = async () => {
       try {
-        const posts = await axios.get<PostType[]>(
-          "https://jsonplaceholder.typicode.com/posts",
-          { signal: controller.signal }
-        );
-        setPosts(posts.data);
+        const result = await posts;
+        setPosts(result.data);
       } catch (err) {
         if (err instanceof CanceledError) return;
         setError((err as AxiosError).message);
@@ -24,8 +22,7 @@ const AsyncUseEffect = () => {
     };
     fetchPost();
     return () => {
-      console.log("called cleanup");
-      controller.abort();
+      cancel();
     };
   }, []);
   return (
